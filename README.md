@@ -16,11 +16,8 @@ Công cụ tự động gửi tin nhắn và file thông báo qua Zalo Web dựa
 
 ## 🚀 Hướng dẫn sử dụng
 
-### 1. Chuẩn bị dữ liệu
-- **File Excel:** Phải có cột Mã căn hộ và cột Số điện thoại.
-- **File thông báo:** Đặt tên file theo định dạng `[Mã căn hộ].pdf` hoặc `[Mã căn hộ].png`. Tất cả file bỏ vào chung một thư mục.
-
-### 2. Cài đặt và Đăng nhập
+### 1. Cài đặt và Đăng nhập
+- **Tải bộ cài đặt:** [Tải ZaloAutoSender v1.1.1 (MEGA.nz)](https://mega.nz/file/qwxDmSDQ#LlTx0gzJHra5sSMzejwdOx43RxjjJzmEQYM1U-0O0NQ)
 - Chạy file `ZaloAutoSender_Setup.exe` để cài đặt.
 - Mở ứng dụng từ Desktop.
 - Nhấn **"Đăng nhập (QR)"**, quét mã Zalo trên trình duyệt hiện lên. Khi thấy danh sách tin nhắn hiện ra là đã thành công. Tắt trình duyệt để quay lại App.
