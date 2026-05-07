@@ -10,8 +10,19 @@ from playwright.async_api import async_playwright
 if getattr(sys, 'frozen', False):
     # Ép Playwright sử dụng trình duyệt đã đóng gói trong thư mục ms-playwright
     base_path = sys._MEIPASS
-    os.environ["PLAYWRIGHT_BROWSERS_PATH"] = os.path.join(base_path, "ms-playwright")
-    # Chúng ta KHÔNG xóa PLAYWRIGHT_BROWSERS_PATH ở đây vì cần nó để trỏ vào bundle
+    browsers_path = os.path.join(base_path, "ms-playwright")
+    os.environ["PLAYWRIGHT_BROWSERS_PATH"] = browsers_path
+    
+    # Một số bản Playwright yêu cầu trỏ trực tiếp vào file thực thi nếu bị vỡ version
+    # Chúng ta sẽ quét tìm file chrome.exe thực tế trong thư mục đóng gói
+    executable_path = None
+    if os.path.exists(browsers_path):
+        for root, dirs, files in os.walk(browsers_path):
+            if "chrome.exe" in files:
+                executable_path = os.path.join(root, "chrome.exe")
+                break
+else:
+    executable_path = None
 
 def col_to_index(col_str):
     """Chuyển đổi tên cột Excel (A, B, AA...) sang chỉ số 0-based index."""
@@ -39,10 +50,14 @@ class ZaloAutoSender:
             async with async_playwright() as p:
                 self.log("[*] Đang mở Chromium (Headless=False)...")
                 try:
-                    browser = await p.chromium.launch(headless=False, args=["--start-maximized"])
+                    # Ưu tiên dùng đường dẫn thực thi đã tìm thấy để tránh lỗi version
+                    browser = await p.chromium.launch(
+                        executable_path=executable_path,
+                        headless=False, 
+                        args=["--start-maximized"]
+                    )
                 except Exception as launch_err:
                     self.log(f"[!] Lỗi khi mở trình duyệt: {launch_err}")
-                    self.log("[!] Gợi ý: Hãy thử chạy 'playwright install chromium' trong CMD.")
                     return False
 
                 # Sử dụng context riêng biệt với storage_state để không ảnh hưởng đến trình duyệt chính hoặc app desktop
@@ -78,8 +93,12 @@ class ZaloAutoSender:
         self.log("[*] Đang kiểm tra trạng thái đăng nhập...")
         try:
             async with async_playwright() as p:
-                # Thêm args=["--start-maximized"] và no_viewport=True để đồng nhất giao diện
-                browser = await p.chromium.launch(headless=False, args=["--start-maximized"])
+                # Sử dụng executable_path đồng nhất
+                browser = await p.chromium.launch(
+                    executable_path=executable_path,
+                    headless=False, 
+                    args=["--start-maximized"]
+                )
                 context = await browser.new_context(storage_state=self.storage_state, no_viewport=True)
                 page = await context.new_page()
                 await page.goto("https://chat.zalo.me/")
@@ -99,14 +118,15 @@ class ZaloAutoSender:
             return False
 
     async def send_process(self, excel_path, sheet_name, file_dir, img_dir, message_template, config):
+        # ... (Phần đọc excel giữ nguyên)
         if not os.path.exists(self.storage_state):
             self.log("[!] Cần đăng nhập trước khi gửi.")
             return
 
         self.is_running = True
         try:
+            # ... (Logic xử lý dữ liệu excel giữ nguyên)
             self.log(f"[*] Đang đọc file Excel: {excel_path}")
-            # ... (Phần đọc excel giữ nguyên)
             if not os.path.exists(excel_path):
                 self.log(f"[!] File Excel không tồn tại: {excel_path}")
                 return
@@ -152,7 +172,12 @@ class ZaloAutoSender:
             processed_in_session = set()
 
             async with async_playwright() as p:
-                browser = await p.chromium.launch(headless=False, args=["--start-maximized"])
+                # Sử dụng executable_path đồng nhất cho tiến trình gửi chính
+                browser = await p.chromium.launch(
+                    executable_path=executable_path,
+                    headless=False, 
+                    args=["--start-maximized"]
+                )
                 context = await browser.new_context(storage_state=self.storage_state, no_viewport=True)
                 page = await context.new_page()
                 page.set_default_timeout(20000)
