@@ -1,0 +1,27 @@
+# Build and Output
+build/
+dist/
+Output/
+*.spec
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Playwright
+ms-playwright/
+
+# Project Specific - Sensitive Data
+storage_state.json
+settings.json
+*.xlsx
+*.xls
+NHAC NO THANG 04/
+NHAC NO PNG/
+
+# IDEs
+.idea/
+.vscode/

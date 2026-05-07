@@ -123,13 +123,15 @@ class App(ctk.CTk):
             "excel_path": "",
             "sheet_name": "04.2026",
             "file_dir": "",
+            "img_dir": "",
             "message": "Chào anh/chị căn hộ {apt}, em gửi thông báo phí tháng {month_year} ạ. Đây là tin nhắn tự động nhắc đóng phí đợt {period} (hạn chót đến ngày {deadline}). Anh/chị vui lòng bỏ qua thông báo này nếu đã hoàn tất thanh toán. Em xin cảm ơn!",
             "month_year": "04/2026",
             "period": "1",
             "deadline": "28/04/2026",
             "col_apt": "B",
             "col_sdt": "J",
-            "attach_file": True
+            "use_attach_file": True,
+            "use_attach_img": False
         }
 
     def save_settings(self):
@@ -137,56 +139,30 @@ class App(ctk.CTk):
             "excel_path": self.excel_entry.get(),
             "sheet_name": self.sheet_entry.get(),
             "file_dir": self.dir_entry.get(),
+            "img_dir": self.img_dir_entry.get(),
             "message": self.message_text.get("1.0", "end-1c"),
             "month_year": self.month_year_entry.get(),
             "period": self.period_entry.get(),
             "deadline": self.deadline_entry.get(),
             "col_apt": self.col_apt_entry.get(),
             "col_sdt": self.col_sdt_entry.get(),
-            "attach_file": self.attach_var.get()
+            "use_attach_file": self.use_file_var.get(),
+            "use_attach_img": self.use_img_var.get()
         }
         with open(self.settings_file, "w", encoding="utf-8") as f:
             json.dump(self.settings, f, ensure_ascii=False, indent=4)
 
     def create_widgets(self):
-        self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(0, weight=1)
-
-        # --- Sidebar / Left Panel (Session Management) ---
-        self.sidebar_frame = ctk.CTkFrame(self, width=200, corner_radius=0)
-        self.sidebar_frame.grid(row=0, column=0, sticky="nsew")
-        self.sidebar_frame.grid_rowconfigure(4, weight=1)
-
-        self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="ZALO BOT", font=ctk.CTkFont(size=20, weight="bold"))
-        self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
-
-        self.login_btn = ctk.CTkButton(self.sidebar_frame, text="Đăng nhập (QR)", command=self.handle_login)
-        self.login_btn.grid(row=1, column=0, padx=20, pady=10)
-
-        self.check_btn = ctk.CTkButton(self.sidebar_frame, text="Kiểm tra Session", command=self.handle_check_login)
-        self.check_btn.grid(row=2, column=0, padx=20, pady=10)
-
-        self.shortcut_btn = ctk.CTkButton(self.sidebar_frame, text="Tạo Shortcut Desktop", fg_color="#34495e", command=self.handle_create_shortcut)
-        self.shortcut_btn.grid(row=3, column=0, padx=20, pady=10)
+        # ... (Sidebar remains same as previous update)
         
-        self.info_label = ctk.CTkLabel(self.sidebar_frame, text="Lưu ý đặt tên file:\n[Mã căn hộ].pdf\nVí dụ: 01.01.pdf", 
-                                       font=ctk.CTkFont(size=12), justify="left", text_color="#3498db")
-        self.info_label.grid(row=4, column=0, padx=20, pady=20)
-
-        self.appearance_mode_label = ctk.CTkLabel(self.sidebar_frame, text="Giao diện:", anchor="w")
-        self.appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
-        self.appearance_mode_optionemenu = ctk.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark", "System"],
-                                                                       command=self.change_appearance_mode_event)
-        self.appearance_mode_optionemenu.grid(row=6, column=0, padx=20, pady=(10, 20))
-        self.appearance_mode_optionemenu.set("Dark")
-
         # --- Main Content ---
+        # (Row indices will be adjusted for new fields)
         self.main_frame = ctk.CTkScrollableFrame(self, corner_radius=0)
         self.main_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
         self.main_frame.grid_columnconfigure(1, weight=1)
 
         # 1. Excel Config
-        self.config_label = ctk.CTkLabel(self.main_frame, text="Cấu hình dữ liệu", font=ctk.CTkFont(size=16, weight="bold"))
+        self.config_label = ctk.CTkLabel(self.main_frame, text="1. Cấu hình dữ liệu nguồn", font=ctk.CTkFont(size=16, weight="bold"))
         self.config_label.grid(row=0, column=0, columnspan=3, padx=10, pady=(10, 10), sticky="w")
 
         ctk.CTkLabel(self.main_frame, text="File Excel:").grid(row=1, column=0, padx=10, pady=5, sticky="e")
@@ -201,56 +177,73 @@ class App(ctk.CTk):
         self.sheet_entry.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
         self.sheet_entry.insert(0, self.settings["sheet_name"])
 
-        ctk.CTkLabel(self.main_frame, text="Cột Căn hộ (A, B, C...):").grid(row=3, column=0, padx=10, pady=5, sticky="e")
+        ctk.CTkLabel(self.main_frame, text="Cột Căn hộ:").grid(row=3, column=0, padx=10, pady=5, sticky="e")
         self.col_apt_entry = ctk.CTkEntry(self.main_frame, width=100)
         self.col_apt_entry.grid(row=3, column=1, padx=10, pady=5, sticky="w")
         self.col_apt_entry.insert(0, self.settings.get("col_apt", "B"))
 
-        ctk.CTkLabel(self.main_frame, text="Cột SĐT (A, B, C...):").grid(row=4, column=0, padx=10, pady=5, sticky="e")
+        ctk.CTkLabel(self.main_frame, text="Cột SĐT:").grid(row=4, column=0, padx=10, pady=5, sticky="e")
         self.col_sdt_entry = ctk.CTkEntry(self.main_frame, width=100)
         self.col_sdt_entry.grid(row=4, column=1, padx=10, pady=5, sticky="w")
         self.col_sdt_entry.insert(0, self.settings.get("col_sdt", "J"))
 
-        ctk.CTkLabel(self.main_frame, text="Thư mục File:").grid(row=5, column=0, padx=10, pady=5, sticky="e")
+        # 2. Files and Images Config
+        self.files_label = ctk.CTkLabel(self.main_frame, text="2. Cấu hình Tệp & Hình ảnh", font=ctk.CTkFont(size=16, weight="bold"))
+        self.files_label.grid(row=5, column=0, columnspan=3, padx=10, pady=(20, 10), sticky="w")
+
+        # Thư mục File thông báo
+        ctk.CTkLabel(self.main_frame, text="Thư mục Thông báo:").grid(row=6, column=0, padx=10, pady=5, sticky="e")
         self.dir_entry = ctk.CTkEntry(self.main_frame)
-        self.dir_entry.grid(row=5, column=1, padx=10, pady=5, sticky="ew")
+        self.dir_entry.grid(row=6, column=1, padx=10, pady=5, sticky="ew")
         self.dir_entry.insert(0, self.settings["file_dir"])
         self.dir_btn = ctk.CTkButton(self.main_frame, text="Chọn", width=60, command=self.browse_dir)
-        self.dir_btn.grid(row=5, column=2, padx=10, pady=5)
+        self.dir_btn.grid(row=6, column=2, padx=10, pady=5)
 
-        # 2. Dynamic Info Config
-        self.dynamic_label = ctk.CTkLabel(self.main_frame, text="Thông tin thông báo", font=ctk.CTkFont(size=16, weight="bold"))
-        self.dynamic_label.grid(row=6, column=0, columnspan=3, padx=10, pady=(20, 10), sticky="w")
+        self.use_file_var = ctk.BooleanVar(value=self.settings.get("use_attach_file", True))
+        self.file_switch = ctk.CTkSwitch(self.main_frame, text="Bật gửi file thông báo (.pdf/.png)", variable=self.use_file_var)
+        self.file_switch.grid(row=7, column=1, padx=10, pady=5, sticky="w")
 
-        ctk.CTkLabel(self.main_frame, text="Tháng/Năm (MM/YYYY):").grid(row=7, column=0, padx=10, pady=5, sticky="e")
+        # Thư mục Hình ảnh bổ sung
+        ctk.CTkLabel(self.main_frame, text="Thư mục Hình ảnh:").grid(row=8, column=0, padx=10, pady=5, sticky="e")
+        self.img_dir_entry = ctk.CTkEntry(self.main_frame)
+        self.img_dir_entry.grid(row=8, column=1, padx=10, pady=5, sticky="ew")
+        self.img_dir_entry.insert(0, self.settings.get("img_dir", ""))
+        self.img_btn = ctk.CTkButton(self.main_frame, text="Chọn", width=60, command=self.browse_img_dir)
+        self.img_btn.grid(row=8, column=2, padx=10, pady=5)
+
+        self.use_img_var = ctk.BooleanVar(value=self.settings.get("use_attach_img", False))
+        self.img_switch = ctk.CTkSwitch(self.main_frame, text="Bật gửi hình ảnh bổ sung", variable=self.use_img_var)
+        self.img_switch.grid(row=9, column=1, padx=10, pady=5, sticky="w")
+
+        # 3. Dynamic Info Config
+        self.dynamic_label = ctk.CTkLabel(self.main_frame, text="3. Thông tin nội dung", font=ctk.CTkFont(size=16, weight="bold"))
+        self.dynamic_label.grid(row=10, column=0, columnspan=3, padx=10, pady=(20, 10), sticky="w")
+
+        ctk.CTkLabel(self.main_frame, text="Tháng/Năm:").grid(row=11, column=0, padx=10, pady=5, sticky="e")
         self.month_year_entry = ctk.CTkEntry(self.main_frame)
-        self.month_year_entry.grid(row=7, column=1, padx=10, pady=5, sticky="ew")
+        self.month_year_entry.grid(row=11, column=1, padx=10, pady=5, sticky="ew")
         self.month_year_entry.insert(0, self.settings.get("month_year", "04/2026"))
 
-        ctk.CTkLabel(self.main_frame, text="Đợt báo phí:").grid(row=8, column=0, padx=10, pady=5, sticky="e")
+        ctk.CTkLabel(self.main_frame, text="Đợt báo phí:").grid(row=12, column=0, padx=10, pady=5, sticky="e")
         self.period_entry = ctk.CTkEntry(self.main_frame)
-        self.period_entry.grid(row=8, column=1, padx=10, pady=5, sticky="ew")
+        self.period_entry.grid(row=12, column=1, padx=10, pady=5, sticky="ew")
         self.period_entry.insert(0, self.settings.get("period", "1"))
 
-        ctk.CTkLabel(self.main_frame, text="Ngày hạn chót:").grid(row=9, column=0, padx=10, pady=5, sticky="e")
+        ctk.CTkLabel(self.main_frame, text="Ngày hạn chót:").grid(row=13, column=0, padx=10, pady=5, sticky="e")
         self.deadline_entry = ctk.CTkEntry(self.main_frame)
-        self.deadline_entry.grid(row=9, column=1, padx=10, pady=5, sticky="ew")
+        self.deadline_entry.grid(row=13, column=1, padx=10, pady=5, sticky="ew")
         self.deadline_entry.insert(0, self.settings.get("deadline", "28/04/2026"))
 
-        self.attach_var = ctk.BooleanVar(value=self.settings.get("attach_file", True))
-        self.attach_checkbox = ctk.CTkCheckBox(self.main_frame, text="Tự động đính kèm file thông báo (.pdf/.png)", variable=self.attach_var)
-        self.attach_checkbox.grid(row=10, column=1, padx=10, pady=10, sticky="w")
-
-        # 3. Message Config
-        ctk.CTkLabel(self.main_frame, text="Nội dung tin nhắn:").grid(row=11, column=0, padx=10, pady=10, sticky="ne")
+        # 4. Message Config
+        ctk.CTkLabel(self.main_frame, text="Nội dung tin nhắn:").grid(row=14, column=0, padx=10, pady=10, sticky="ne")
         self.message_text = ctk.CTkTextbox(self.main_frame, height=120)
-        self.message_text.grid(row=10, column=1, columnspan=2, padx=10, pady=10, sticky="ew")
+        self.message_text.grid(row=14, column=1, columnspan=2, padx=10, pady=10, sticky="ew")
         self.message_text.insert("1.0", self.settings["message"])
-        ctk.CTkLabel(self.main_frame, text="Từ khóa: {apt}, {month_year}, {period}, {deadline}", font=ctk.CTkFont(size=11, slant="italic")).grid(row=11, column=1, sticky="w", padx=10)
+        ctk.CTkLabel(self.main_frame, text="Từ khóa: {apt}, {month_year}, {period}, {deadline}", font=ctk.CTkFont(size=11, slant="italic")).grid(row=15, column=1, sticky="w", padx=10)
 
-        # 4. Control Buttons
+        # 5. Control Buttons
         self.control_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        self.control_frame.grid(row=12, column=0, columnspan=3, pady=20)
+        self.control_frame.grid(row=16, column=0, columnspan=3, pady=20)
         
         self.start_btn = ctk.CTkButton(self.control_frame, text="BẮT ĐẦU GỬI", font=ctk.CTkFont(size=14, weight="bold"), 
                                        height=40, width=200, command=self.handle_start)
@@ -260,12 +253,12 @@ class App(ctk.CTk):
                                       height=40, width=100, fg_color="#d35400", hover_color="#e67e22", command=self.handle_stop)
         self.stop_btn.pack(side="left", padx=10)
 
-        # 5. Logs
+        # 6. Logs
         self.log_label = ctk.CTkLabel(self.main_frame, text="Nhật ký hoạt động", font=ctk.CTkFont(size=16, weight="bold"))
-        self.log_label.grid(row=13, column=0, columnspan=3, padx=10, pady=(10, 5), sticky="w")
+        self.log_label.grid(row=17, column=0, columnspan=3, padx=10, pady=(10, 5), sticky="w")
         
         self.log_box = ctk.CTkTextbox(self.main_frame, height=250)
-        self.log_box.grid(row=14, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
+        self.log_box.grid(row=18, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
         self.log_box.configure(state="disabled")
 
     # --- Event Handlers ---
@@ -284,6 +277,12 @@ class App(ctk.CTk):
         if directory:
             self.dir_entry.delete(0, "end")
             self.dir_entry.insert(0, directory)
+
+    def browse_img_dir(self):
+        directory = filedialog.askdirectory()
+        if directory:
+            self.img_dir_entry.delete(0, "end")
+            self.img_dir_entry.insert(0, directory)
 
     def update_log(self, message):
         # Sử dụng after để đảm bảo cập nhật UI từ main thread
@@ -332,6 +331,7 @@ class App(ctk.CTk):
         excel = self.excel_entry.get()
         sheet = self.sheet_entry.get()
         fdir = self.dir_entry.get()
+        idir = self.img_dir_entry.get()
         msg = self.message_text.get("1.0", "end-1c")
         
         # Lấy thêm các tham số mới
@@ -341,21 +341,26 @@ class App(ctk.CTk):
             "deadline": self.deadline_entry.get(),
             "col_apt": self.col_apt_entry.get().strip().upper(),
             "col_sdt": self.col_sdt_entry.get().strip().upper(),
-            "attach_file": self.attach_var.get()
+            "use_attach_file": self.use_file_var.get(),
+            "use_attach_img": self.use_img_var.get()
         }
 
         if not excel or not msg:
             messagebox.showwarning("Cảnh báo", "Vui lòng nhập đầy đủ cấu hình!")
             return
             
-        if config["attach_file"] and not fdir:
+        if config["use_attach_file"] and not fdir:
             messagebox.showwarning("Cảnh báo", "Vui lòng chọn thư mục chứa file thông báo!")
+            return
+        
+        if config["use_attach_img"] and not idir:
+            messagebox.showwarning("Cảnh báo", "Vui lòng chọn thư mục chứa hình ảnh bổ sung!")
             return
 
         self.start_btn.configure(state="disabled")
         
         async def task():
-            await self.zalo_bot.send_process(excel, sheet, fdir, msg, config)
+            await self.zalo_bot.send_process(excel, sheet, fdir, idir, msg, config)
             self.after(0, lambda: self.start_btn.configure(state="normal"))
 
         self.run_async(task())

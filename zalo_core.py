@@ -98,7 +98,7 @@ class ZaloAutoSender:
             self.log(f"[!] Lỗi khi kiểm tra session: {e}")
             return False
 
-    async def send_process(self, excel_path, sheet_name, file_dir, message_template, config):
+    async def send_process(self, excel_path, sheet_name, file_dir, img_dir, message_template, config):
         if not os.path.exists(self.storage_state):
             self.log("[!] Cần đăng nhập trước khi gửi.")
             return
@@ -106,6 +106,7 @@ class ZaloAutoSender:
         self.is_running = True
         try:
             self.log(f"[*] Đang đọc file Excel: {excel_path}")
+            # ... (Phần đọc excel giữ nguyên)
             if not os.path.exists(excel_path):
                 self.log(f"[!] File Excel không tồn tại: {excel_path}")
                 return
@@ -170,16 +171,31 @@ class ZaloAutoSender:
                     if apt in processed_in_session:
                         continue
 
-                    # Kiểm tra đính kèm file
-                    should_attach = config.get("attach_file", True)
+                    # 1. Kiểm tra File Thông báo
+                    should_attach_file = config.get("use_attach_file", True)
                     file_path = ""
-                    if should_attach:
+                    if should_attach_file:
                         file_path = os.path.normpath(os.path.join(file_dir, f"{apt}.pdf"))
                         if not os.path.exists(file_path):
                             file_path = os.path.normpath(os.path.join(file_dir, f"{apt}.png"))
                         
                         if not os.path.exists(file_path):
-                            self.log(f"[-] [{i+1}/{len(data)}] Thiếu file cho căn {apt}. Bỏ qua.")
+                            self.log(f"[-] [{i+1}/{len(data)}] Thiếu file thông báo cho {apt}. Bỏ qua.")
+                            continue
+
+                    # 2. Kiểm tra Hình ảnh bổ sung
+                    should_attach_img = config.get("use_attach_img", False)
+                    img_path = ""
+                    if should_attach_img:
+                        extensions = ['.jpg', '.jpeg', '.png', '.webp', '.bmp']
+                        for ext in extensions:
+                            tmp_path = os.path.normpath(os.path.join(img_dir, f"{apt}{ext}"))
+                            if os.path.exists(tmp_path):
+                                img_path = tmp_path
+                                break
+                        
+                        if not img_path:
+                            self.log(f"[-] [{i+1}/{len(data)}] Thiếu hình ảnh bổ sung cho {apt}. Bỏ qua.")
                             continue
 
                     self.log(f"[>] [{i+1}/{len(data)}] Đang gửi: {apt} ({sdt})")
@@ -213,11 +229,13 @@ class ZaloAutoSender:
 
                         check_keyword = msg.split('\n')[0][:20]
                         
-                        # Kiểm tra trùng tin nhắn hoặc trùng tên file
+                        # Kiểm tra trùng tin nhắn hoặc tệp tin
                         is_duplicate = False
                         if check_keyword and check_keyword in history_content:
                             is_duplicate = True
-                        if should_attach and os.path.basename(file_path) in history_content:
+                        if should_attach_file and os.path.basename(file_path) in history_content:
+                            is_duplicate = True
+                        if should_attach_img and os.path.basename(img_path) in history_content:
                             is_duplicate = True
                             
                         if is_duplicate:
@@ -225,6 +243,7 @@ class ZaloAutoSender:
                             processed_in_session.add(apt)
                             continue
 
+                        # Kết bạn nếu chưa là bạn
                         btn_kb = page.locator("[data-translate-inner='STR_FRIEND_REQ_SEND']").first
                         if await btn_kb.is_visible():
                             await btn_kb.click()
@@ -233,6 +252,7 @@ class ZaloAutoSender:
                             if await confirm.is_visible():
                                 await confirm.click()
 
+                        # Gửi tin nhắn văn bản
                         chat_input = page.locator("#richInput")
                         if await chat_input.is_visible():
                             await chat_input.focus()
@@ -240,16 +260,15 @@ class ZaloAutoSender:
                             await page.keyboard.press("Enter")
                             await asyncio.sleep(1)
                         
-                            if should_attach and file_path:
-                                attach_btn = page.locator("div[title='Đính kèm File'], [icon='Attach_24_Line']").first
-                                if await attach_btn.is_visible():
-                                    await attach_btn.click()
-                                    await asyncio.sleep(1)
-                                    async with page.expect_file_chooser() as fc_info:
-                                        await page.locator(".zmenu-item[data-id='div_CX_Select'], [data-translate-inner='STR_CHOOSE_FILE_COMPUTER']").first.click()
-                                    file_chooser = await fc_info.value
-                                    await file_chooser.set_files(file_path)
-                                    await asyncio.sleep(4)
+                            # Gửi File thông báo
+                            if should_attach_file and file_path:
+                                await self.upload_file(page, file_path)
+                                await asyncio.sleep(2)
+
+                            # Gửi Hình ảnh bổ sung
+                            if should_attach_img and img_path:
+                                await self.upload_file(page, img_path)
+                                await asyncio.sleep(2)
                             
                             self.log(f"[+] Gửi thành công cho {apt}")
                             processed_in_session.add(apt)
@@ -265,6 +284,21 @@ class ZaloAutoSender:
         finally:
             self.is_running = False
             self.log("--- TIẾN TRÌNH KẾT THÚC ---")
+
+    async def upload_file(self, page, file_path):
+        """Hàm hỗ trợ upload file lên Zalo Chat"""
+        try:
+            attach_btn = page.locator("div[title='Đính kèm File'], [icon='Attach_24_Line']").first
+            if await attach_btn.is_visible():
+                await attach_btn.click()
+                await asyncio.sleep(1)
+                async with page.expect_file_chooser() as fc_info:
+                    # Click vào dòng "Chọn file từ máy tính"
+                    await page.locator(".zmenu-item[data-id='div_CX_Select'], [data-translate-inner='STR_CHOOSE_FILE_COMPUTER']").first.click()
+                file_chooser = await fc_info.value
+                await file_chooser.set_files(file_path)
+        except Exception as e:
+            self.log(f"[!] Lỗi upload file {os.path.basename(file_path)}: {e}")
 
     def stop(self):
         self.is_running = False
