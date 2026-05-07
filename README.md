@@ -17,7 +17,7 @@ Công cụ tự động gửi tin nhắn và file thông báo qua Zalo Web dựa
 ## 🚀 Hướng dẫn sử dụng
 
 ### 1. Cài đặt và Đăng nhập
-- **Tải bộ cài đặt:** [Tải ZaloAutoSender v1.1.1 (MEGA.nz)](https://mega.nz/file/qwxDmSDQ#LlTx0gzJHra5sSMzejwdOx43RxjjJzmEQYM1U-0O0NQ)
+- **Tải bộ cài đặt:** [Tải ZaloAutoSender v1.1.2 (MEGA.nz)](https://mega.nz/file/KkQl0aLR#eXqzEKotP9mBjAjJDuAofFIMj74jk_Mng60XZMhG-8I)
 - Chạy file `ZaloAutoSender_Setup.exe` để cài đặt.
 - Mở ứng dụng từ Desktop.
 - Nhấn **"Đăng nhập (QR)"**, quét mã Zalo trên trình duyệt hiện lên. Khi thấy danh sách tin nhắn hiện ra là đã thành công. Tắt trình duyệt để quay lại App.
