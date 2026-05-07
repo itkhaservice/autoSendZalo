@@ -1,0 +1,7 @@
+playwright==1.53.0
+pandas
+openpyxl
+customtkinter
+pillow
+darkdetect
+pywin32
