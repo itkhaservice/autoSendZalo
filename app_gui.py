@@ -153,10 +153,41 @@ class App(ctk.CTk):
             json.dump(self.settings, f, ensure_ascii=False, indent=4)
 
     def create_widgets(self):
-        # ... (Sidebar remains same as previous update)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+
+        # --- Sidebar / Left Panel (Session Management) ---
+        self.sidebar_frame = ctk.CTkFrame(self, width=200, corner_radius=0)
+        self.sidebar_frame.grid(row=0, column=0, sticky="nsew")
+        self.sidebar_frame.grid_rowconfigure(4, weight=1)
+
+        self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="ZALO BOT", font=ctk.CTkFont(size=20, weight="bold"))
+        self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
+
+        self.login_btn = ctk.CTkButton(self.sidebar_frame, text="Đăng nhập (QR)", command=self.handle_login)
+        self.login_btn.grid(row=1, column=0, padx=20, pady=10)
+
+        self.check_btn = ctk.CTkButton(self.sidebar_frame, text="Kiểm tra Session", command=self.handle_check_login)
+        self.check_btn.grid(row=2, column=0, padx=20, pady=10)
+
+        self.shortcut_btn = ctk.CTkButton(self.sidebar_frame, text="Tạo Shortcut Desktop", fg_color="#34495e", command=self.handle_create_shortcut)
+        self.shortcut_btn.grid(row=3, column=0, padx=20, pady=10)
+
+        self.debt_btn = ctk.CTkButton(self.sidebar_frame, text="Tự động gạch nợ", fg_color="#d35400", state="disabled", command=lambda: messagebox.showinfo("Thông báo", "Tính năng này sẽ được cập nhật trong tương lai."))
+        self.debt_btn.grid(row=4, column=0, padx=20, pady=10)
         
+        self.info_label = ctk.CTkLabel(self.sidebar_frame, text="Lưu ý đặt tên file:\n[Mã căn hộ].pdf\nVí dụ: 01.01.pdf", 
+                                       font=ctk.CTkFont(size=12), justify="left", text_color="#3498db")
+        self.info_label.grid(row=5, column=0, padx=20, pady=20)
+
+        self.appearance_mode_label = ctk.CTkLabel(self.sidebar_frame, text="Giao diện:", anchor="w")
+        self.appearance_mode_label.grid(row=6, column=0, padx=20, pady=(10, 0))
+        self.appearance_mode_optionemenu = ctk.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark", "System"],
+                                                                       command=self.change_appearance_mode_event)
+        self.appearance_mode_optionemenu.grid(row=7, column=0, padx=20, pady=(10, 20))
+        self.appearance_mode_optionemenu.set("Dark")
+
         # --- Main Content ---
-        # (Row indices will be adjusted for new fields)
         self.main_frame = ctk.CTkScrollableFrame(self, corner_radius=0)
         self.main_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
         self.main_frame.grid_columnconfigure(1, weight=1)
