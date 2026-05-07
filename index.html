@@ -3,78 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zalo Auto-Sender | Giải pháp gửi thông báo tự động</title>
+    <title>Zalo Auto-Sender | Hướng dẫn sử dụng chi tiết</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .hero { background: linear-gradient(135deg, #108042 0%, #0d6635 100%); color: white; padding: 100px 0; }
-        .btn-download { background-color: #ffc107; border: none; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; border-radius: 50px; transition: 0.3s; }
-        .btn-download:hover { background-color: #e0a800; transform: scale(1.05); }
-        .feature-icon { font-size: 2.5rem; color: #108042; margin-bottom: 20px; }
-        .footer { padding: 50px 0; background: #343a40; color: white; }
+        :root { --primary-color: #108042; --secondary-color: #0d6635; }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Roboto, sans-serif; color: #333; }
+        .hero { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); color: white; padding: 80px 0; border-bottom: 5px solid #ffc107; }
+        .navbar { background-color: #1a1a1a !important; }
+        .section-title { position: relative; padding-bottom: 15px; margin-bottom: 30px; font-weight: bold; color: var(--primary-color); }
+        .section-title::after { content: ''; position: absolute; left: 0; bottom: 0; width: 60px; height: 3px; background-color: #ffc107; }
+        .card { border: none; border-radius: 15px; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .step-number { background-color: var(--primary-color); color: white; width: 35px; height: 35px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; }
+        .instruction-block { background: white; padding: 30px; border-radius: 15px; margin-bottom: 25px; border-left: 5px solid var(--primary-color); }
+        .badge-custom { background-color: #e8f5e9; color: var(--primary-color); font-weight: 600; padding: 5px 15px; border-radius: 20px; }
+        .btn-download { background-color: #ffc107; color: #000; font-weight: bold; border-radius: 50px; padding: 12px 35px; border: none; }
+        .btn-download:hover { background-color: #e0a800; color: #000; }
+        code { color: #d63384; background: #f8f9fa; padding: 2px 5px; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="#">Zalo Auto-Sender</a>
-            <div class="navbar-text ms-auto">Nguồn: CMTHANG</div>
+            <a class="navbar-brand fw-bold" href="#"><i class="bi bi-robot me-2"></i>Zalo Auto-Sender</a>
+            <span class="navbar-text d-none d-md-block">Nguồn: CMTHANG | Phiên bản v1.1.1</span>
         </div>
     </nav>
 
     <header class="hero text-center">
         <div class="container">
-            <h1 class="display-3 fw-bold mb-4">Gửi thông báo Zalo tự động</h1>
-            <p class="lead mb-5">Giải pháp chuyên nghiệp để gửi thông báo phí, nhắc nợ và tệp tin qua Zalo Web một cách nhanh chóng và an toàn.</p>
-            <a href="https://github.com/itkhaservice/autoSendZalo/releases" class="btn btn-download shadow">Tải về Bản cài đặt (v1.0.0)</a>
+            <h1 class="display-4 fw-bold mb-3">Tự động hóa thông báo Zalo</h1>
+            <p class="lead fs-4 mb-4">Giải pháp gửi tin nhắn, file phí và hình ảnh hàng loạt chuyên nghiệp.</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="https://github.com/itkhaservice/autoSendZalo/releases" class="btn btn-download btn-lg shadow-sm">
+                    <i class="bi bi-download me-2"></i>Tải bản Setup (v1.1.1)
+                </a>
+                <a href="#tutorial" class="btn btn-outline-light btn-lg rounded-pill px-4">Xem hướng dẫn</a>
+            </div>
         </div>
     </header>
 
-    <section class="py-5">
-        <div class="container">
-            <div class="row text-center">
-                <div class="col-md-4 mb-4">
-                    <div class="feature-icon">📊</div>
-                    <h3>Dữ liệu Excel</h3>
-                    <p>Tự động đọc danh sách khách hàng, căn hộ và số điện thoại từ tệp Excel một cách thông minh.</p>
+    <main class="container py-5">
+        <!-- Tổng quan -->
+        <section class="mb-5">
+            <h2 class="section-title">Giới thiệu phần mềm</h2>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <p class="lead">Zalo Auto-Sender là công cụ đắc lực dành cho Ban quản lý tòa nhà, Kế toán và Hành chính, giúp tự động hóa quy trình nhắc nợ và gửi thông báo phí hàng tháng.</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> <strong>Tiết kiệm 95% thời gian:</strong> Gửi hàng trăm tin nhắn chỉ trong vài phút.</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> <strong>Chính xác tuyệt đối:</strong> Tự động khớp tệp tin theo mã căn hộ từ Excel.</li>
+                        <li class="bi-check-circle-fill text-success me-2"></i> <strong>An toàn & Bảo mật:</strong> Chạy trực tiếp trên trình duyệt của bạn, không lưu mật khẩu.</li>
+                    </ul>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <div class="feature-icon">📎</div>
-                    <h3>Gửi tệp hàng loạt</h3>
-                    <p>Tự động tìm và đính kèm file PDF/PNG theo mã căn hộ. Không cần thao tác thủ công từng người.</p>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Khởi động nhanh</h3>
-                    <p>Ứng dụng được đóng gói chuyên nghiệp, khởi động ngay lập tức và giao diện Full màn hình dễ quan sát.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="bg-light py-5">
-        <div class="container">
-            <h2 class="text-center mb-5">Hướng dẫn nhanh</h2>
-            <div class="row">
-                <div class="col-lg-8 mx-auto">
-                    <div class="list-group shadow-sm">
-                        <div class="list-group-item p-3"><strong>BƯỚC 1:</strong> Tải và chạy file <code>ZaloAutoSender_Setup.exe</code> để cài đặt.</div>
-                        <div class="list-group-item p-3"><strong>BƯỚC 2:</strong> Nhấn "Đăng nhập (QR)" để kết nối tài khoản Zalo của bạn.</div>
-                        <div class="list-group-item p-3"><strong>BƯỚC 3:</strong> Cấu hình đường dẫn File Excel và Thư mục chứa thông báo.</div>
-                        <div class="list-group-item p-3"><strong>BƯỚC 4:</strong> Nhấn "BẮT ĐẦU GỬI" và để phần mềm tự động làm việc.</div>
+                <div class="col-md-6">
+                    <div class="card h-100 p-4 bg-dark text-white">
+                        <h4 class="mb-3 text-warning">Điểm mới trong v1.1.1</h4>
+                        <ul class="mb-0">
+                            <li>Hỗ trợ thư mục hình ảnh bổ sung (nhiều định dạng JPG, PNG, WEBP...).</li>
+                            <li>Công tắc (Switch) bật/tắt linh hoạt việc đính kèm tệp.</li>
+                            <li>Giao diện Full màn hình (Maximized) tối ưu trải nghiệm.</li>
+                            <li>Hệ thống kiểm tra trùng lặp thông minh dựa trên lịch sử chat.</li>
+                        </ul>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <footer class="footer text-center">
+        <!-- Hướng dẫn sử dụng chi tiết -->
+        <section id="tutorial" class="mb-5">
+            <h2 class="section-title">Hướng dẫn sử dụng chi tiết</h2>
+
+            <div class="instruction-block shadow-sm">
+                <h4><span class="step-number">1</span>Cài đặt và Khởi động</h4>
+                <p>Tải file <code>ZaloAutoSender_Setup.exe</code> và tiến hành cài đặt. Sau khi hoàn tất, biểu tượng phần mềm sẽ xuất hiện trên màn hình Desktop của bạn. Click đúp để mở ứng dụng ở chế độ Full màn hình.</p>
+            </div>
+
+            <div class="instruction-block shadow-sm">
+                <h4><span class="step-number">2</span>Kết nối tài khoản Zalo</h4>
+                <ul>
+                    <li>Nhấn nút <strong>Đăng nhập (QR)</strong> ở thanh Sidebar bên trái.</li>
+                    <li>Một cửa sổ trình duyệt Zalo Web sẽ hiện lên. Quét mã QR bằng điện thoại của bạn.</li>
+                    <li>Khi thấy danh sách tin nhắn hiện ra trên trình duyệt, hãy <strong>đóng cửa sổ trình duyệt đó lại</strong>.</li>
+                    <li>Nhấn <strong>Kiểm tra Session</strong> để đảm bảo trạng thái đăng nhập đã được lưu.</li>
+                </ul>
+            </div>
+
+            <div class="instruction-block shadow-sm">
+                <h4><span class="step-number">3</span>Chuẩn bị dữ liệu Excel</h4>
+                <p>File Excel của bạn cần có cấu trúc rõ ràng. Ví dụ:</p>
+                <table class="table table-bordered table-sm w-auto mb-3">
+                    <thead class="table-light">
+                        <tr><th>Cột B (Mã Căn)</th><th>Cột J (Số điện thoại)</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>01.01</td><td>0901234567</td></tr>
+                        <tr><td>15.08A</td><td>0988776655</td></tr>
+                    </tbody>
+                </table>
+                <p>Trong phần mềm, hãy nhập đúng tên <strong>Cột Căn hộ</strong> và <strong>Cột SĐT</strong> tương ứng với file của bạn.</p>
+            </div>
+
+            <div class="instruction-block shadow-sm">
+                <h4><span class="step-number">4</span>Quy tắc đặt tên tệp đính kèm</h4>
+                <p>Phần mềm tự động tìm file theo nguyên tắc <code>Tên file = Mã căn hộ</code>.</p>
+                <ul>
+                    <li><strong>File phí (PDF/PNG):</strong> Nếu mã căn là <code>12.03</code>, hãy đặt tên file là <code>12.03.pdf</code> hoặc <code>12.03.png</code>.</li>
+                    <li><strong>Hình ảnh bổ sung:</strong> Hỗ trợ tất cả định dạng ảnh. Ví dụ: <code>12.03.jpg</code>.</li>
+                </ul>
+                <p class="text-danger small"><em>* Lưu ý: Không để khoảng trắng dư thừa trong tên file hoặc mã căn hộ trong Excel.</em></p>
+            </div>
+
+            <div class="instruction-block shadow-sm">
+                <h4><span class="step-number">5</span>Soạn tin nhắn động</h4>
+                <p>Sử dụng các "Từ khóa thông minh" để nội dung tự thay đổi theo từng người:</p>
+                <ul>
+                    <li><code>{apt}</code>: Sẽ được thay bằng Mã căn hộ.</li>
+                    <li><code>{month_year}</code>, <code>{period}</code>, <code>{deadline}</code>: Thay bằng thông tin bạn nhập ở mục 3 trên App.</li>
+                </ul>
+                <div class="p-3 bg-light rounded">
+                    <strong>Ví dụ:</strong> <code>Chào anh/chị căn hộ {apt}, em gửi thông báo phí tháng {month_year}...</code>
+                </div>
+            </div>
+
+            <div class="instruction-block shadow-sm">
+                <h4><span class="step-number">6</span>Bật/Tắt tính năng và Gửi</h4>
+                <p>Sử dụng các nút gạt (Switch) để quyết định sẽ gửi những gì:</p>
+                <ul>
+                    <li><strong>Bật gửi file:</strong> App sẽ quét thư mục PDF để đính kèm.</li>
+                    <li><strong>Bật gửi hình ảnh:</strong> App sẽ quét thư mục Ảnh để đính kèm.</li>
+                </ul>
+                <p>Cuối cùng, nhấn <strong>BẮT ĐẦU GỬI</strong> và theo dõi nhật ký ở phía dưới.</p>
+            </div>
+        </section>
+
+        <!-- Lưu ý & Mẹo -->
+        <section class="mb-5">
+            <h2 class="section-title">Lưu ý quan trọng</h2>
+            <div class="alert alert-warning border-0 shadow-sm rounded-4">
+                <h5 class="alert-heading fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Phòng tránh Spam Zalo</h5>
+                <p class="mb-0">Zalo có cơ chế chống tin nhắn rác. Nếu bạn gửi hàng loạt cho người lạ (chưa kết bạn), tài khoản có thể bị khóa tạm thời. <strong>Mẹo:</strong> Phần mềm đã tích hợp tính năng tự động gửi lời mời kết bạn, nhưng tốt nhất hãy thực hiện gửi giãn cách hoặc gửi cho những người đã từng liên lạc.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer py-5 bg-dark text-white text-center">
         <div class="container">
-            <p>&copy; 2026 Zalo Auto-Sender. Phát triển bởi <strong>CMTHANG</strong>.</p>
-            <p><a href="https://github.com/itkhaservice/autoSendZalo" class="text-light">Xem mã nguồn trên GitHub</a></p>
+            <p class="mb-2">Phần mềm được phát triển và tối ưu bởi <strong>CMTHANG</strong></p>
+            <p class="text-secondary small mb-4">Dành riêng cho mục đích quản lý hành chính và thông báo tòa nhà.</p>
+            <div class="social-links">
+                <a href="https://github.com/itkhaservice/autoSendZalo" class="btn btn-outline-light btn-sm rounded-pill px-4">
+                    <i class="bi bi-github me-2"></i>Mã nguồn GitHub
+                </a>
+            </div>
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
