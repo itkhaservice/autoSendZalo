@@ -252,19 +252,26 @@ class ZaloAutoSender:
                         msg = msg.replace("{period}", config.get("period", ""))
                         msg = msg.replace("{deadline}", config.get("deadline", ""))
 
-                        check_keyword = msg.split('\n')[0][:20]
+                        # Tối ưu check_keyword: Phải bao gồm mã căn hộ để không bị trùng khi 1 SĐT có nhiều căn
+                        check_keyword = f"{apt}" 
                         
                         # Kiểm tra trùng tin nhắn hoặc tệp tin
                         is_duplicate = False
-                        if check_keyword and check_keyword in history_content:
-                            is_duplicate = True
-                        if should_attach_file and os.path.basename(file_path) in history_content:
-                            is_duplicate = True
-                        if should_attach_img and os.path.basename(img_path) in history_content:
-                            is_duplicate = True
+                        # Nếu trong lịch sử đã có mã căn hộ này VÀ đã có tên file này thì mới coi là trùng
+                        if check_keyword in history_content:
+                            # Nếu có đính kèm file, phải kiểm tra xem file cụ thể đó đã gửi chưa
+                            if should_attach_file:
+                                if os.path.basename(file_path) in history_content:
+                                    is_duplicate = True
+                            elif should_attach_img:
+                                if os.path.basename(img_path) in history_content:
+                                    is_duplicate = True
+                            else:
+                                # Nếu chỉ gửi text, thấy mã căn là coi như xong
+                                is_duplicate = True
                             
                         if is_duplicate:
-                            self.log(f"[=] {apt} đã được gửi trước đó. Bỏ qua.")
+                            self.log(f"[=] {apt} đã có trong lịch sử chat. Bỏ qua.")
                             processed_in_session.add(apt)
                             continue
 
