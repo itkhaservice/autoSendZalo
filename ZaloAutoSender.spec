@@ -5,8 +5,8 @@ a = Analysis(
     ['app_gui.py'],
     pathex=[],
     binaries=[],
-    datas=[('C:\\Users\\qlnha\\AppData\\Roaming\\Python\\Python314\\site-packages\\customtkinter', 'customtkinter/'), ('C:\\Users\\qlnha\\AppData\\Roaming\\Python\\Python314\\site-packages\\playwright', 'playwright/'), ('ms-playwright', 'ms-playwright/'), ('poppler', 'poppler/'), ('Logo512.png', '.'), ('Logo512.ico', '.')],
-    hiddenimports=['win32com.client', 'pythoncom'],
+    datas=[('C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\customtkinter', 'customtkinter/'), ('C:\\Users\\PC\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\playwright', 'playwright/'), ('D:\\CODE\\autoSendZalo\\pw-browsers', 'pw-browsers/'), ('D:\\CODE\\autoSendZalo\\poppler', 'poppler/'), ('D:\\CODE\\autoSendZalo\\mailauto', 'mailauto/'), ('D:\\CODE\\autoSendZalo\\Logo512.png', '.'), ('D:\\CODE\\autoSendZalo\\Logo512.ico', '.')],
+    hiddenimports=['win32com.client', 'pythoncom', 'email_core', 'zalo_core'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -32,7 +32,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['Logo512.ico'],
+    icon=['D:\\CODE\\autoSendZalo\\Logo512.ico'],
 )
 coll = COLLECT(
     exe,

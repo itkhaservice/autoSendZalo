@@ -8,19 +8,24 @@ from playwright.async_api import async_playwright
 
 # Cấu hình Playwright cho môi trường EXE
 if getattr(sys, 'frozen', False):
-    # Ép Playwright sử dụng trình duyệt đã đóng gói trong thư mục ms-playwright
-    base_path = sys._MEIPASS
-    browsers_path = os.path.join(base_path, "ms-playwright")
-    os.environ["PLAYWRIGHT_BROWSERS_PATH"] = browsers_path
+    # Trong môi trường One-Dir, _internal là nơi chứa các file đính kèm
+    internal_path = os.path.join(sys._MEIPASS, "pw-browsers")
+    # Hoặc nếu chạy từ thư mục gốc của EXE
+    root_path = os.path.join(os.path.dirname(sys.executable), "pw-browsers")
     
-    # Một số bản Playwright yêu cầu trỏ trực tiếp vào file thực thi nếu bị vỡ version
-    # Chúng ta sẽ quét tìm file chrome.exe thực tế trong thư mục đóng gói
-    executable_path = None
-    if os.path.exists(browsers_path):
-        for root, dirs, files in os.walk(browsers_path):
-            if "chrome.exe" in files:
-                executable_path = os.path.join(root, "chrome.exe")
-                break
+    if os.path.exists(internal_path):
+        browsers_dir = internal_path
+    else:
+        browsers_dir = root_path
+else:
+    browsers_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pw-browsers")
+
+os.environ["PLAYWRIGHT_BROWSERS_PATH"] = browsers_dir
+
+# Đường dẫn thực thi cụ thể
+portable_browser = os.path.join(browsers_dir, "chromium-1208", "chrome-win64", "chrome.exe")
+if os.path.exists(portable_browser):
+    executable_path = portable_browser
 else:
     executable_path = None
 
@@ -118,14 +123,12 @@ class ZaloAutoSender:
             return False
 
     async def send_process(self, excel_path, sheet_name, file_dir, img_dir, message_template, config):
-        # ... (Phần đọc excel giữ nguyên)
         if not os.path.exists(self.storage_state):
             self.log("[!] Cần đăng nhập trước khi gửi.")
             return
 
         self.is_running = True
         try:
-            # ... (Logic xử lý dữ liệu excel giữ nguyên)
             self.log(f"[*] Đang đọc file Excel: {excel_path}")
             if not os.path.exists(excel_path):
                 self.log(f"[!] File Excel không tồn tại: {excel_path}")
