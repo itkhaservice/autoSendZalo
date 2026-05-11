@@ -182,95 +182,112 @@ class EmailAutoSender:
                     self.log(f"[>] [{i+1}/{len(data)}] Đang gửi Email: {apt} ({email})")
                     
                     try:
-                        # 1. Bấm Soạn thư (Thử nhiều selector để đảm bảo)
+                        # 1. Bấm Soạn thư
                         self.log("[*] Đang tìm nút Soạn thư...")
-                        # Thêm rcmbtn108 và các thuộc tính data-fab theo mẫu người dùng gửi
+                        # KHÔI PHỤC SELECTOR TỪ COMMIT ĐÃ CHẠY ĐƯỢC
                         compose_btn = page.locator("#rcmbtn108, #rcmbtn104, a.compose, [data-fab='true'], [onclick*='compose']").first
                         
-                        # Đợi nút xuất hiện và có thể click
-                        await compose_btn.wait_for(state="visible", timeout=10000)
+                        await compose_btn.wait_for(state="visible", timeout=15000)
                         self.log("[*] Đã thấy nút Soạn thư, đang click...")
                         await compose_btn.click()
                         
-                        # Đợi trang soạn thư sẵn sàng (Tiêu đề hoặc ô nhập người nhận)
-                        self.log("[*] Đang đợi trang soạn thư load...")
-                        await page.wait_for_selector("input[name='_subject'], #compose-subject, #_to", timeout=20000)
-                        await asyncio.sleep(2) # Đợi thêm 1 chút cho chắc chắn các script load xong
+                        # Đợi trang soạn thư sẵn sàng
+                        self.log("[*] Đang đợi giao diện soạn thư hiển thị...")
+                        try:
+                            # Chờ một trong các yếu tố của form soạn thảo xuất hiện
+                            await page.wait_for_selector(".recipient-input input, #compose-subject, input[name='_subject'], #_to", timeout=25000)
+                            self.log("[+] Giao diện soạn thư đã sẵn sàng.")
+                        except Exception as e:
+                            self.log(f"[!] Timeout: Không thấy form soạn thư xuất hiện.")
+                            await page.goto(actual_url)
+                            continue
 
                         # 2. Nhập người nhận
                         self.log(f"[*] Nhập người nhận: {email}")
-                        # Roundcube Elastic dùng 1 ô input nằm trong UL.recipient-input
-                        to_input = page.locator("#compose_to input, .recipient-input input, #_to").first
-                        await to_input.click()
+                        # Tìm ô input thực tế bên trong vùng người nhận
+                        to_input = page.locator("#compose_to input[role='combobox'], .recipient-input input, #_to").first
+                        
+                        await to_input.wait_for(state="visible", timeout=15000)
+                        await to_input.focus()
+                        await to_input.click(force=True)
                         await asyncio.sleep(0.5)
-                        # Dùng type thay vì fill để giả lập gõ phím, kích hoạt các event JS
-                        await to_input.type(email, delay=50)
+                        
+                        # Gõ email từng phím một để Roundcube xử lý danh sách gợi ý
+                        await page.keyboard.type(email, delay=50)
+                        await asyncio.sleep(0.5)
+                        # Nhấn Enter để biến văn bản thành "tag" người nhận
                         await page.keyboard.press("Enter")
                         await asyncio.sleep(1)
-                        
+
                         # 3. Nhập Tiêu đề
                         self.log(f"[*] Nhập tiêu đề cho {apt}")
                         subject = subject_template.replace("{apt}", apt).replace("{month_year}", month_year).replace("{period}", period).replace("{deadline}", deadline)
+                        # Tiêu đề là input text thông thường, dùng fill cho nhanh và chuẩn
                         subject_input = page.locator("#compose-subject, input[name='_subject']").first
-                        await subject_input.click()
-                        await subject_input.clear()
-                        await subject_input.type(subject, delay=30)
+                        await subject_input.wait_for(state="visible", timeout=10000)
+                        await subject_input.fill(subject)
                         await asyncio.sleep(0.5)
-                        
-                        # 4. Nhập Nội dung (Vùng bên dưới)
+
+                        # 4. Nhập Nội dung
                         self.log("[*] Nhập nội dung thư...")
                         body = body_template.replace("{apt}", apt).replace("{month_year}", month_year).replace("{period}", period).replace("{deadline}", deadline)
                         
-                        # Kiểm tra TinyMCE Iframe
+                        # Thử điền vào TinyMCE Iframe trước
                         editor_iframe = page.frame_locator("iframe[id^='composebody_'], iframe.tox-edit-area__iframe").first
-                        if await editor_iframe.locator("body").is_visible(timeout=5000):
-                            self.log("[*] Đã phát hiện TinyMCE Editor, đang điền nội dung...")
-                            await editor_iframe.locator("body").click()
-                            # Clear cũ và type mới
-                            await editor_iframe.locator("body").evaluate("el => el.innerHTML = ''")
-                            await editor_iframe.locator("body").type(body, delay=20)
-                        else:
-                            # Nếu không dùng Rich Text, điền vào textarea
-                            self.log("[*] Sử dụng Plain Text Editor...")
-                            await page.locator("#composebody, textarea[name='_message']").first.type(body, delay=20)
-                        
+                        try:
+                            await asyncio.sleep(1.5) 
+                            if await editor_iframe.locator("body").is_visible(timeout=5000):
+                                await editor_iframe.locator("body").click()
+                                await editor_iframe.locator("body").evaluate("(el, text) => { el.innerHTML = text; }", body.replace("\n", "<br>"))
+                                self.log("[+] Đã điền vào Rich Text Editor.")
+                            else:
+                                raise Exception("TinyMCE không sẵn sàng")
+                        except:
+                            # Nếu không có Iframe, điền vào textarea mặc định
+                            try:
+                                await page.locator("#composebody, textarea[name='_message']").first.fill(body)
+                                self.log("[+] Đã điền vào Plain Text Editor.")
+                            except:
+                                self.log("[!] Không thể điền Nội dung.")
+
                         await asyncio.sleep(1)
 
                         # 5. Kèm tệp tin đính kèm
                         self.log(f"[*] Đang đính kèm tệp: {os.path.basename(file_path)}")
                         async with page.expect_file_chooser() as fc_info:
-                            # Nút đính kèm ID rcmbtn112 hoặc class .attach
-                            attach_btn = page.locator("#rcmbtn112, .attach, [onclick*='upload_input'], a.button.attach").first
+                            # Elastic skin: Nút đính kèm có thể có data-command="attach"
+                            attach_btn = page.locator("[data-command='attach'], #rcmbtn112, .attach, [onclick*='upload_input'], a.button.attach").first
                             await attach_btn.click()
                         file_chooser = await fc_info.value
                         await file_chooser.set_files(file_path)
                         
-                        # Chờ tải lên (danh sách đính kèm xuất hiện file)
-                        self.log("[*] Đang chờ tệp tải lên...")
-                        # Wait for either the list to have an item or the upload status to disappear
+                        self.log("[*] Đang chờ tệp tải lên hoàn tất...")
+                        # Đợi cho đến khi không còn thanh tiến trình (progress bar) và file xuất hiện trong danh sách
                         try:
-                            await page.wait_for_selector(".attachmentslist li, #attachment-list li, #compose-attachments li", timeout=30000)
+                            # Đợi file xuất hiện trong list
+                            await page.wait_for_selector(".attachmentslist li:not(.uploading), #attachment-list li:not(.uploading)", timeout=45000)
                             self.log("[+] Đã tải tệp lên xong.")
                         except:
-                            self.log("[!] Cảnh báo: Không thấy xác nhận tải tệp lên, vẫn tiếp tục thử gửi.")
+                            self.log("[!] Cảnh báo: Thời gian tải tệp quá lâu, có thể tệp chưa lên hết.")
                         
-                        await asyncio.sleep(1)
+                        await asyncio.sleep(2)
 
-                        # 6. Gửi (Nút Gửi ID rcmbtn115)
+                        # 6. Gửi
                         self.log("[*] Đang nhấn nút Gửi...")
-                        send_btn = page.locator("#rcmbtn115, .send, button.send, a.button.send").first
+                        # Ưu tiên data-command='send' vì nó ổn định nhất
+                        send_btn = page.locator("[data-command='send'], #rcmbtn115, .send, button.send, a.button.send").first
                         await send_btn.click()
                         
-                        # Đợi xác nhận thành công
-                        self.log("[*] Đang đợi xác nhận gửi...")
+                        # Đợi xác nhận thành công (Flash message)
+                        self.log("[*] Đang đợi xác nhận gửi từ hệ thống...")
                         try:
-                            # Chờ thông báo thành công hoặc quay lại trang chính (Inbox)
-                            await page.wait_for_selector(".messagemain.success, .notifier.success, #messagestack .success, .task-mail:not(.action-compose)", timeout=20000)
+                            # Roundcube thường hiện thông báo "Message sent successfully"
+                            await page.wait_for_selector(".messagemain.success, .notifier.success, #messagestack .success, .ui.pnotify .alert-success", timeout=30000)
                             self.log(f"[+] Đã gửi thành công cho {apt}")
                         except:
-                            self.log(f"[*] Đã thực hiện lệnh gửi cho {apt}. Vui lòng kiểm tra Hộp thư đi.")
+                            self.log(f"[*] Đã thực hiện lệnh gửi cho {apt}. Vui lòng kiểm tra Hộp thư đi (Sent).")
 
-                        await asyncio.sleep(3) # Nghỉ giữa các lần gửi
+                        await asyncio.sleep(3) # Nghỉ giữa các lần gửi để tránh bị coi là spam
 
                     except Exception as e:
                         self.log(f"[!] Lỗi trong quy trình gửi cho {apt}: {e}")
