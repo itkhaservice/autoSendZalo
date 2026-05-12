@@ -32,7 +32,7 @@ class App(ctk.CTk):
             ctk.set_default_color_theme("green")
         except: pass
 
-        self.title("Zalo & Email Auto-Sender (v1.1.2) - Nguồn: CMTHANG")
+        self.title("Zalo & Email Auto-Sender (v2.0.0) - Nguồn: CMTHANG")
         # ... rest of init ...
         
         # Khởi động Full màn hình
