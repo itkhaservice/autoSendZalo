@@ -287,27 +287,23 @@ class ZaloAutoSender:
                             if await confirm.is_visible():
                                 await confirm.click()
 
-                        # Gửi tin nhắn văn bản
-                        chat_input = page.locator("#richInput")
-                        if await chat_input.is_visible():
-                            await chat_input.focus()
-                            await page.keyboard.type(msg)
-                            await page.keyboard.press("Enter")
-                            await asyncio.sleep(1)
+                        if not await self.send_text_message(page, msg, check_keyword):
+                            self.log(f"[!] Khong xac nhan duoc tin nhan text cho {apt}. Bo qua file de tranh gui moi tep.")
+                            continue
                         
-                            # Gửi File thông báo
-                            if should_attach_file and file_path:
-                                await self.upload_file(page, file_path)
-                                await asyncio.sleep(2)
-
-                            # Gửi Hình ảnh bổ sung
-                            if should_attach_img and img_path:
-                                await self.upload_file(page, img_path)
-                                await asyncio.sleep(2)
-                            
-                            self.log(f"[+] Gửi thành công cho {apt}")
-                            processed_in_session.add(apt)
+                        # Gửi File thông báo
+                        if should_attach_file and file_path:
+                            await self.upload_file(page, file_path)
                             await asyncio.sleep(2)
+
+                        # Gửi Hình ảnh bổ sung
+                        if should_attach_img and img_path:
+                            await self.upload_file(page, img_path)
+                            await asyncio.sleep(2)
+                        
+                        self.log(f"[+] Gửi thành công cho {apt}")
+                        processed_in_session.add(apt)
+                        await asyncio.sleep(2)
                                 
                     except Exception as e:
                         self.log(f"[!] Lỗi khi xử lý {apt}: {e}")
@@ -319,6 +315,68 @@ class ZaloAutoSender:
         finally:
             self.is_running = False
             self.log("--- TIẾN TRÌNH KẾT THÚC ---")
+
+    async def send_text_message(self, page, message, verify_keyword):
+        try:
+            before_text = ""
+            try:
+                before_text = await page.locator(".message-view").inner_text(timeout=3000)
+            except:
+                pass
+
+            chat_input = page.locator("#richInput").first
+            await chat_input.wait_for(state="visible", timeout=10000)
+            await chat_input.click()
+            await chat_input.focus()
+            await page.keyboard.press("Control+A")
+            await page.keyboard.press("Backspace")
+
+            try:
+                await chat_input.fill(message)
+            except:
+                await page.keyboard.insert_text(message)
+
+            await asyncio.sleep(0.3)
+
+            send_candidates = [
+                "[data-translate-inner='STR_SEND']",
+                "[title='Gửi'], [aria-label='Gửi']",
+                "[title='Send'], [aria-label='Send']",
+                "[icon='Sent_24_Line'], [icon='Send_24_Line']",
+                "button:has-text('Gửi'), div:has-text('Gửi')",
+            ]
+
+            clicked_send = False
+            for selector in send_candidates:
+                try:
+                    send_btn = page.locator(selector).last
+                    if await send_btn.is_visible(timeout=800):
+                        await send_btn.click()
+                        clicked_send = True
+                        break
+                except:
+                    continue
+
+            if not clicked_send:
+                await page.keyboard.press("Enter")
+
+            for _ in range(12):
+                await asyncio.sleep(0.5)
+                try:
+                    after_text = await page.locator(".message-view").inner_text(timeout=3000)
+                    if verify_keyword in after_text and after_text != before_text:
+                        return True
+                except:
+                    pass
+
+            try:
+                after_text = await page.locator(".message-view").inner_text(timeout=3000)
+                return verify_keyword in after_text and after_text != before_text
+            except:
+                return False
+        except Exception as e:
+            self.log(f"[!] Loi gui tin nhan text: {e}")
+            return False
 
     async def upload_file(self, page, file_path):
         """Hàm hỗ trợ upload file lên Zalo Chat"""
